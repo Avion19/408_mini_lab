@@ -71,7 +71,7 @@ This downloads the Go packages listed in `go.mod`.
 3. Scroll to **Approved Integrations**.
 4. Select **+ New Access Token**.
 5. Enter a descriptive purpose, such as `CS408 Assignment Tracker`.
-6. Set an expiration date, then select **Generate Token**.
+6. Set an expiration date (such as a few months from now), then select **Generate Token**.
 7. Copy the token immediately. Canvas displays it only once.
 
 ### 4. Create the local environment file
