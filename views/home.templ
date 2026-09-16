@@ -1,0 +1,117 @@
+package views
+
+templ Home(data PageData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<link href="/static/css/output.css" rel="stylesheet"/>
+			<title>Canvas Assignment Tracker</title>
+		</head>
+		<body class="app-shell">
+			<header class="topbar">
+				<div class="brand-mark">C</div>
+				<div>
+					<p class="eyebrow">CS 408 MINI-LAB</p>
+					<h1>Canvas Assignment Tracker</h1>
+				</div>
+			</header>
+
+			<main class="content-grid">
+				<section class="hero-card">
+					<div>
+						<p class="eyebrow accent">YOUR NEXT MOVE</p>
+						<h2>Keep the week in view.</h2>
+						<p class="hero-copy">Pull upcoming work from every active Canvas course and turn a noisy course list into one focused plan.</p>
+					</div>
+					<div class="hero-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+				</section>
+
+				<section class="panel filter-panel">
+					<div class="section-heading">
+						<div>
+							<p class="eyebrow">FILTER YOUR WORK</p>
+							<h2>What should we surface?</h2>
+						</div>
+						<span class="endpoint-pill">2 Canvas endpoints</span>
+					</div>
+					<form method="get" action="/" class="filter-form">
+						<input type="hidden" name="load" value="1"/>
+						<label>
+							<span>Course</span>
+							<select name="course_id">
+								if len(data.Courses) == 0 {
+									<option value="all">Courses load after authentication</option>
+								} else {
+									for _, course := range data.Courses {
+										<option value={ course.ID } selected?={ course.ID == data.CourseID }>{ course.Name }</option>
+									}
+								}
+							</select>
+						</label>
+						<label>
+							<span>Look ahead</span>
+							<select name="days">
+								<option value="7" selected?={ data.Days == 7 }>Next 7 days</option>
+								<option value="14" selected?={ data.Days == 14 }>Next 14 days</option>
+								<option value="30" selected?={ data.Days == 30 }>Next 30 days</option>
+								<option value="90" selected?={ data.Days == 90 }>Next 90 days</option>
+							</select>
+						</label>
+						<button type="submit">Load assignments <span>→</span></button>
+					</form>
+				</section>
+
+				if data.Error != "" {
+					<div class="notice error-notice" role="alert"><strong>We could not load Canvas.</strong><span>{ data.Error }</span></div>
+				}
+				if data.Message != "" {
+					<div class="notice info-notice"><span>{ data.Message }</span></div>
+				}
+				for _, warning := range data.Warnings {
+					<div class="notice warning-notice"><span>{ warning }</span></div>
+				}
+
+				<section class="panel assignment-panel">
+					<div class="section-heading results-heading">
+						<div>
+							<p class="eyebrow">UPCOMING ASSIGNMENTS</p>
+							<h2>Your workload, sorted by urgency.</h2>
+						</div>
+						<div class="result-count">{ assignmentCount(data.Assignments) } <span>items</span></div>
+					</div>
+					if len(data.Assignments) == 0 {
+						<div class="empty-state">
+							<div class="empty-icon">✓</div>
+							<p>No assignments to show yet.</p>
+							<span>Load your courses above to build your dashboard.</span>
+						</div>
+					} else {
+						<div class="assignment-list">
+							for _, assignment := range data.Assignments {
+								<article class="assignment-row">
+									<div class="assignment-main">
+										<div class="assignment-title-line">
+											<h3>{ assignment.Name }</h3>
+											<span class={ "status status-" + assignment.Urgency }>{ assignment.UrgencyLabel }</span>
+										</div>
+										<p class="course-label">{ assignment.CourseName }</p>
+									</div>
+									<div class="assignment-meta">
+										<div><span class="meta-label">DUE</span><strong>{ assignment.DueLabel }</strong></div>
+										<div><span class="meta-label">VALUE</span><strong>{ assignment.PointsLabel }</strong></div>
+										if assignment.URL != "" {
+											<a href={ assignmentURL(assignment.URL) } target="_blank" rel="noreferrer">Open in Canvas ↗</a>
+										}
+									</div>
+								</article>
+							}
+						</div>
+					}
+				</section>
+			</main>
+			<footer><span>Built with Go, Echo, Templ, and Canvas REST API</span><span>Read-only • Your token stays local</span></footer>
+		</body>
+	</html>
+}
