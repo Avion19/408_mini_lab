@@ -1,10 +1,10 @@
 # Canvas Assignment Tracker
 
-Canvas Assignment Tracker is a read-only web application for students who
-want one focused view of their upcoming work. It loads active courses from
-Boise State Canvas, combines upcoming and future assignments, filters them by
-a selectable look-ahead window, and presents due dates, point values, urgency,
-and links back to Canvas.
+Canvas Assignment Tracker is a read-only web application that gives Boise
+State students one focused view of their upcoming Canvas work. It loads active
+courses, combines upcoming and future assignments, filters them by a selected
+time window, and shows due dates, point values, urgency, and links back to
+Canvas.
 
 The project uses the same Go, Echo, Templ, and Tailwind stack as the Hello
 World assignment. It is intentionally small, but demonstrates authenticated
@@ -32,81 +32,130 @@ secret management.
 - Tailwind-generated CSS for the interface
 - Canvas LMS REST API for course and assignment data
 
-## Requirements
+## Setup instructions
 
-Before running the application, install:
+These instructions assume you have never used Go before. Go is both the
+programming language and the toolchain used to build this project. Its built-in
+package manager, called **Go modules**, reads `go.mod` and downloads the exact
+library versions this application needs into Go's local package cache. You do
+not need to install Node.js, npm, or any front-end build tools to run the
+committed application.
 
-1. Go 1.22 or newer: <https://go.dev/dl/>
-2. A Boise State Canvas student account
-3. A Canvas API access token
+### 1. Install Go 1.22 or newer
 
-Node.js is not required to run the committed application. The generated Templ
-file and compiled stylesheet are included in the repository.
+First, open a terminal and check whether Go is already installed:
 
-## Setup
+```bash
+go version
+```
 
-### 1. Clone the repository
+You need output beginning with `go version go1.22` or a newer version. If the
+command is not found, or the version is older than 1.22, install Go using one
+of these options:
 
-Open a terminal and run:
+| Operating system | Installation option |
+| --- | --- |
+| macOS | Download the macOS installer from [go.dev/dl](https://go.dev/dl/), or run `brew install go` if you use Homebrew. |
+| Windows | Download and run the Windows MSI installer from [go.dev/dl](https://go.dev/dl/). Keep the default installation options. |
+| Debian or Ubuntu | Run `sudo apt update` followed by `sudo apt install golang-go`. If `go version` is still older than 1.22, use the current Linux archive from [go.dev/dl](https://go.dev/dl/) instead. |
+| Any operating system | Use the installer or archive instructions on [go.dev/dl](https://go.dev/dl/). |
+
+After installing, close and reopen the terminal so its `PATH` is refreshed,
+then run `go version` again. Do not continue until it reports Go 1.22 or newer.
+
+### 2. Clone the repository
+
+Choose a folder where you keep school projects, then run:
 
 ```bash
 git clone https://github.com/Avion19/408_mini_lab.git
 cd 408_mini_lab
 ```
 
-### 2. Download Go dependencies
+The first command downloads a copy of the project. The second command moves
+the terminal into that project folder; every remaining command in this guide
+must be run there.
 
-From the project directory, run:
+### 3. Download the Go dependencies
+
+Run:
 
 ```bash
 go mod download
 ```
 
-This downloads the Go packages listed in `go.mod`.
+This is Go's equivalent of an `npm install`: it reads `go.mod` and downloads
+the Echo web framework and Templ libraries into your local Go module cache.
+You normally run it once after cloning and again only when `go.mod` or `go.sum`
+changes. Go may also download a missing dependency automatically when you run
+the application.
 
-### 3. Create a Canvas API token
+### 4. Generate a Canvas access token
 
-1. Sign in to Canvas with your student account.
-2. Open **Account Settings** from the profile menu in the global navigation.
-3. Scroll to **Approved Integrations**.
+The application reads your own Canvas enrollments, so it needs a personal
+Canvas API token. Sign in to Boise State Canvas in a browser, then:
+
+1. Select **Account** in Canvas's left-hand global navigation.
+2. Select **Settings**.
+3. Scroll to the **Approved Integrations** section.
 4. Select **+ New Access Token**.
-5. Enter a descriptive purpose, such as `CS408 Assignment Tracker`.
-6. Set an expiration date (such as a few months from now), then select **Generate Token**.
-7. Copy the token immediately. Canvas displays it only once.
+5. For the purpose, enter something recognizable, such as `CS408 Assignment Tracker`.
+6. Choose an expiration date, such as a few months from now, then select **Generate Token**.
+7. Copy the value Canvas displays, which usually begins with `13~`.
 
-### 4. Create the local environment file
+Canvas shows the complete token only once. Store it long enough to put it in
+the next step. If you close the dialog before copying it, generate a new token.
+If your Canvas account does not show **+ New Access Token**, contact your
+Canvas administrator; token creation may be disabled for that account.
 
-Copy the safe template:
+### 5. Create the `.env` configuration file
+
+Make your private configuration file from the included template:
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` in a text editor and replace the placeholder value for
-`CANVAS_API_TOKEN` with the token from Canvas. The `.env` file is intentionally
-ignored by Git. Never commit or share it.
+Open `.env` in a text editor. Replace only `your_canvas_token_here` with the
+token you just copied. Leave the Boise State URL and port unchanged unless you
+know you need different values:
 
-### 5. Start the application
+```dotenv
+CANVAS_API_TOKEN=13~pasteYourLongCanvasTokenHere
+CANVAS_BASE_URL=https://boisestatecanvas.instructure.com
+PORT=8080
+```
 
-Run:
+Do not put the token in quotation marks or add spaces around the `=`. The token
+is equivalent to a password for your Canvas account. `.env` is listed in
+`.gitignore`, so Git will not include it in commits; never share it, commit it,
+or paste it into an assignment submission. If it is exposed, revoke it under
+**Approved Integrations** and create a replacement.
+
+### 6. Run the application
+
+Start the local web server:
 
 ```bash
 go run .
 ```
 
-Open <http://localhost:8080> in a browser. Choose a course and look-ahead
-window, then select **Load assignments**.
+When the terminal reports that Echo is listening on port `8080`, open
+<http://localhost:8080> in a browser. The page loads your active courses. Pick
+one course or **All active courses**, select a look-ahead window, and choose
+**Load assignments**. Stop the server at any time by returning to the terminal
+and pressing `Ctrl+C`.
 
-### 6. Run the tests
+### 7. Run the tests (optional)
 
-To run the automated checks:
+Run the automated checks with:
 
 ```bash
 go test ./...
 ```
 
-The tests use an in-memory HTTP transport, so they do not require a Canvas
-token or a network connection.
+The tests use an in-memory HTTP transport, so they do not need your Canvas
+token or an internet connection.
 
 ## Configuration
 
@@ -212,27 +261,32 @@ the optional CSS tooling.
 ## Reflection
 
 This mini-lab made the difference between a static page and an API-backed
-application concrete. I learned how Canvas bearer authentication works and how
-to map only the useful fields from a large JSON response into a small display
-model. Separating the Canvas client from the Echo handler also made the API
-logic easier to reason about and test.
+application concrete. I learned how a Canvas bearer token becomes an
+`Authorization` header, how to decode only the fields needed from a large JSON
+response, and how keeping the Canvas client separate from the Echo handler
+makes the API code easier to understand and test. Building the display model
+also showed me that data returned by an API is not automatically ready for a
+user interface; dates, missing values, and course names all need deliberate
+handling.
 
-Pagination was what I first had trouble with. A first page can look
-correct while silently hiding data, so the client follows Canvas `Link`
-headers for every list request. Another challenge was understanding that
-Canvas’s `upcoming` and `future` buckets are separate classifications. I tried running this
-originally looking two weeks out and assignments I was expecting to show up weren't there.
-It was then after finding out that upcoming and future are different that I was able
-to incorporate the two to work how I originally envisioned. The app
-now combines both buckets, removes duplicate assignments, and applies the
-student-selected date window locally.
+Pagination was the most challenging part. The first response from Canvas can
+look complete even when additional courses or assignments are hidden behind a
+`Link` header, so the client follows every `rel="next"` link before using the
+results. I also assumed that assignments in a two-week window would
+all arrive in Canvas's `upcoming` bucket. Learning that `upcoming` and
+`future` are separate classifications explained why expected assignments were
+missing. I felt like that wasn't super intuitive but it makes sense.
+Combining both buckets, removing duplicates by assignment ID, and
+then applying the selected date window locally produced the behavior I had
+in mind originally.
 
-If I had more time, I would request Canvas submission information so the app
-could distinguish an overdue assignment from one that has already been turned
-in late. I would also add browser-level tests for the form flow, a small cache
-for repeated refreshes so the website operates faster,
-and calendar-event support for students who want to
-export their deadlines.
+With more time, I would request Canvas submission data so the tracker could
+identify work already submitted late instead of treating all past-due work the
+same. I would add browser-level tests for the course and time-window form,
+cache course data between refreshes, and support Canvas calendar events for
+students who want to export deadlines. For a version intended for students
+beyond this lab, I would replace personal tokens in `.env` with a Canvas OAuth
+flow so users never need to give a deployed application a long-lived token.
 
 ## Demo GIF
 
